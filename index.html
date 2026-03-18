@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RailConnect - Book Train Tickets</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Hero Section Styles */
+    .hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #00224D 100%);
+      color: white;
+      padding: 4rem 1rem;
+      position: relative;
+      overflow: hidden;
+      min-height: 500px;
+      display: flex;
+      align-items: center;
+    }
+
+    .hero-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .hero-text h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    .hero-text p {
+      font-size: 1.25rem;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+    }
+
+    .search-card {
+      background: var(--surface);
+      border-radius: 1rem;
+      padding: 2rem;
+      color: var(--text-main);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .search-full {
+      grid-column: span 2;
+    }
+
+    .results-section {
+      padding: 4rem 1rem;
+      background-color: var(--background);
+    }
+
+    .results-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .train-card {
+      background: var(--surface);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      border: 1px solid var(--border);
+    }
+
+    .train-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary-light);
+    }
+
+    .train-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .train-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .train-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .train-no {
+      background: rgba(0, 77, 159, 0.1);
+      color: var(--primary);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .train-route {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      margin-top: 0.5rem;
+    }
+
+    .route-point {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .route-time {
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .route-station {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .route-duration {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      position: relative;
+    }
+
+    .route-duration::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: -20px;
+      right: -20px;
+      height: 1px;
+      background: var(--border);
+      z-index: -1;
+    }
+
+    .train-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+
+    .class-tags {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .class-tag {
+      background: #f1f5f9;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .hero-content {
+        grid-template-columns: 1fr;
+      }
+      .train-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+      }
+      .train-actions {
+        width: 100%;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="nav-container">
+      <div class="logo-container">
+        <a href="index.html" class="logo-text">🚆 RailConnect</a>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="#" class="nav-link">PNR Status</a>
+      </nav>
+      <div class="user-actions" id="guest-actions">
+        <a href="login.html" class="btn btn-outline">Login</a>
+        <a href="register.html" class="btn btn-primary">Register</a>
+      </div>
+      <div class="user-actions hidden" id="user-actions">
+        <span id="user-name-display" style="font-weight: 600;"></span>
+        <a href="dashboard.html" class="btn btn-outline">My Trips</a>
+        <button onclick="Auth.logout()" class="btn btn-secondary">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1>Experience the journey of a lifetime.</h1>
+          <p>Book train tickets instantly, check PNR status, and travel with comfort and extreme ease across India.</p>
+        </div>
+        
+        <div class="search-card">
+          <h2 style="margin-bottom: 1.5rem; text-align: center; color: var(--primary);">Book a Ticket</h2>
+          <form id="search-form">
+            <div class="search-grid">
+              <div class="form-group">
+                <label class="form-label" for="from-station">From</label>
+                <select class="form-control" id="from-station" required>
+                  <option value="" disabled selected>Select Origin</option>
+                  <!-- Populated via JS -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="to-station">To</label>
+                <select class="form-control" id="to-station" required>
+                  <option value="" disabled selected>Select Destination</option>
+                  <!-- Populated via JS -->
+                </select>
+              </div>
+              <div class="form-group search-full">
+                <label class="form-label" for="travel-date">Journey Date</label>
+                <input type="date" class="form-control" id="travel-date" required>
+              </div>
+              <div class="form-group search-full text-center mt-2">
+                <button type="submit" class="btn btn-secondary" style="width: 100%; font-size: 1.125rem; padding: 0.75rem;">Search Trains</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results-section hidden" id="results-section">
+      <div class="results-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+          <h2 style="font-size: 1.75rem;">Available Trains</h2>
+          <p id="search-summary" class="text-muted"></p>
+        </div>
+        <div id="trains-list">
+          <!-- Trains injected here by JS -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <div>
+        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">🚆 RailConnect</h3>
+        <p style="color: var(--text-muted);">A premium train booking experience.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#">About Us</a>
+        <a href="#">Contact</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Privacy Policy</a>
+      </div>
+      <div>
+        <p style="color: var(--text-muted);">&copy; 2026 RailConnect Clone. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - RailConnect</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .auth-container {
+      min-height: calc(100vh - 160px); /* Account for header/footer */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: linear-gradient(135deg, #f4f7fa 0%, #e2e8f0 100%);
+    }
+
+    .auth-card {
+      background: var(--surface);
+      padding: 2.5rem;
+      border-radius: 1rem;
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .auth-header h1 {
+      color: var(--primary);
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-header p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="nav-container">
+      <div class="logo-container">
+        <a href="index.html" class="logo-text">🚆 RailConnect</a>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+      </nav>
+      <div class="user-actions">
+        <a href="register.html" class="btn btn-primary">Register</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="auth-header">
+          <h1>Welcome Back</h1>
+          <p>Login to book and manage your trips.</p>
+        </div>
+        
+        <div id="login-error" class="error-msg"></div>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            <input type="email" id="email" class="form-control" required placeholder="name@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input type="password" id="password" class="form-control" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">Sign In</button>
+        </form>
+
+        <p class="text-center mt-4" style="font-size: 0.875rem; color: var(--text-muted);">
+          Don't have an account? <a href="register.html">Register here</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Redirect if already logged in
+      if (Auth.getCurrentUser()) {
+        window.location.href = 'index.html';
+      }
+
+      const loginForm = document.getElementById('login-form');
+      const errorMsg = document.getElementById('login-error');
+
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        const result = Auth.login(email, password);
+
+        if (result.success) {
+          // Check if there was a pending booking attempt
+          const pending = sessionStorage.getItem('pendingBooking');
+          if (pending) {
+            const { trainNo, date } = JSON.parse(pending);
+            sessionStorage.removeItem('pendingBooking');
+            window.location.href = `book.html?trainNo=${trainNo}&date=${date}`;
+          } else {
+            window.location.href = 'index.html';
+          }
+        } else {
+          errorMsg.textContent = result.message;
+          errorMsg.style.display = 'block';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

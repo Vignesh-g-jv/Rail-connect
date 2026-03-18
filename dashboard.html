@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Dashboard - RailConnect</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .dashboard-container {
+      padding: 3rem 1rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      color: white;
+      padding: 3rem 2rem;
+      border-radius: 1rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .welcome-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background: url('data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h20v20H0V0zm20 20h20v20H20V20z" fill="rgba(255,255,255,0.05)"/></svg>');
+      background-size: 40px 40px;
+    }
+
+    .welcome-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .welcome-content h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .booking-history {
+      margin-top: 3rem;
+    }
+
+    .booking-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition-fast);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .booking-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+      border-color: #E2E8F0;
+    }
+
+    .status-badge {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .booking-header {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px dashed var(--border);
+      padding-right: 100px; /* Space for the badge */
+    }
+
+    .booking-header h3 {
+      font-size: 1.25rem;
+      color: var(--primary);
+    }
+
+    .pnr-text {
+      font-family: monospace;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .booking-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .detail-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .no-bookings {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: var(--surface);
+      border-radius: 1rem;
+      border: 1px dashed var(--border);
+    }
+
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="nav-container">
+      <div class="logo-container">
+        <a href="index.html" class="logo-text">🚆 RailConnect</a>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+      </nav>
+      <div class="user-actions" id="user-actions">
+        <!-- JS Auth logic will handle this, but we force logout button here -->
+        <button onclick="Auth.logout()" class="btn btn-outline" style="border-color: var(--danger); color: var(--danger)">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    
+    <div class="welcome-banner animate-fade-up">
+      <div class="welcome-content">
+        <h1 id="user-greeting">Welcome!</h1>
+        <p>Manage your upcoming trips and review past travel history.</p>
+      </div>
+    </div>
+
+    <div class="booking-history animate-fade-up" style="animation-delay: 0.2s;">
+      <h2 class="section-title">My Bookings</h2>
+      
+      <div id="bookings-container">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+  </main>
+
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/bookings.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Auth check
+      const user = Auth.getCurrentUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      document.getElementById('user-greeting').textContent = `Hello, ${user.name}!`;
+
+      // 2. Fetch Bookings
+      const bookings = Bookings.getUserBookings(user.id);
+      renderBookings(bookings);
+    });
+
+    function renderBookings(bookings) {
+      const container = document.getElementById('bookings-container');
+
+      if (bookings.length === 0) {
+        container.innerHTML = `
+          <div class="no-bookings">
+            <h3 style="color: var(--primary); margin-bottom: 0.5rem;">No trips found</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">You haven't booked any train tickets yet.</p>
+            <a href="index.html" class="btn btn-secondary">Search Trains Now</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      
+      bookings.forEach(booking => {
+        // Find train details
+        const train = window.TRAINS.find(t => t.trainNo === booking.trainNo);
+        const trainName = train ? train.name : 'Unknown Train';
+        
+        const srcName = train ? (window.STATIONS.find(s => s.code === train.source)?.name || train.source) : '';
+        const destName = train ? (window.STATIONS.find(s => s.code === train.destination)?.name || train.destination) : '';
+
+        // Safely handle passengers which might be missing in older mocks
+        const pCount = booking.passengers ? booking.passengers.length : 1;
+        
+        const dateObj = new Date(booking.bookingDate);
+        const bookedOn = dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        const card = document.createElement('div');
+        card.className = 'booking-card';
+        card.innerHTML = `
+          <div class="status-badge">✓ ${booking.bookingStatus}</div>
+          
+          <div class="booking-header">
+            <h3>${trainName} (${booking.trainNo})</h3>
+            <div class="pnr-text">PNR: ${booking.pnr}</div>
+          </div>
+          
+          <div class="booking-details">
+            <div class="detail-item">
+              <span class="detail-label">Journey Date</span>
+              <span class="detail-value">${booking.date}</span>
+            </div>
+            
+            <div class="detail-item">
+              <span class="detail-label">Route</span>
+              <span class="detail-value">${srcName} → ${destName}</span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Class</span>
+              <span class="detail-value">${booking.travelClass || 'N/A'}</span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Passengers</span>
+              <span class="detail-value">${pCount}</span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Total Amount</span>
+              <span class="detail-value">₹${booking.totalAmount}</span>
+            </div>
+
+             <div class="detail-item">
+              <span class="detail-label">Booked On</span>
+              <span class="detail-value">${bookedOn}</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>

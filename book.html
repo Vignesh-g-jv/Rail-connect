@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Ticket - RailConnect</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .booking-wrapper {
+      padding: 3rem 1rem;
+      background: #F8FAFC;
+    }
+
+    .booking-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .booking-section {
+      background: var(--surface);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 2rem;
+      border: 1px solid var(--border);
+    }
+
+    .booking-section h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .train-summary-card {
+      background: linear-gradient(135deg, var(--primary) 0%, #1E293B 100%);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .train-summary-card::after {
+      content: '🚆';
+      position: absolute;
+      right: -10px;
+      bottom: -20px;
+      font-size: 8rem;
+      opacity: 0.1;
+    }
+
+    .passenger-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 1rem;
+      align-items: end;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .fare-summary {
+      position: sticky;
+      top: 100px;
+    }
+
+    .fare-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    .fare-total {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 2px dashed var(--border);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    @media (max-width: 900px) {
+      .booking-grid {
+        grid-template-columns: 1fr;
+      }
+      .passenger-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="nav-container">
+      <div class="logo-container">
+        <a href="index.html" class="logo-text">🚆 RailConnect</a>
+      </div>
+      <div class="user-actions" id="user-actions">
+        <span id="user-name-display" style="font-weight: 600;"></span>
+        <a href="dashboard.html" class="btn btn-outline">My Trips</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="booking-wrapper container">
+    <h1 class="section-title animate-fade-up">Complete Your Booking</h1>
+    
+    <div class="booking-grid animate-fade-up" style="animation-delay: 0.1s;">
+      
+      <!-- Left Column: Details -->
+      <div>
+        <div class="train-summary-card" id="train-summary">
+          <!-- Populated by JS -->
+        </div>
+
+        <form id="booking-form">
+          <div class="booking-section">
+            <h2>👥 Passenger Details</h2>
+            <div id="passengers-container">
+              <div class="passenger-row">
+                <div class="form-group mb-0">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-control passenger-name" required placeholder="Passenger Name">
+                </div>
+                <div class="form-group mb-0">
+                  <label class="form-label">Age</label>
+                  <input type="number" class="form-control passenger-age" required min="1" max="120" placeholder="Age">
+                </div>
+                <div class="form-group mb-0">
+                  <label class="form-label">Gender</label>
+                  <select class="form-control passenger-gender" required>
+                    <option value="" disabled selected>Select</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="O">Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline mt-2" onclick="addPassenger()">+ Add Another Passenger</button>
+          </div>
+
+          <div class="booking-section">
+            <h2>💳 Payment Options</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.875rem;">This is a simulated environment. No actual payment will be deducted.</p>
+            <div class="form-group">
+              <input type="radio" id="upi" name="payment" value="upi" checked>
+              <label for="upi" style="font-weight: 500; margin-left: 0.5rem;">UPI / QR Code</label>
+            </div>
+            <div class="form-group">
+              <input type="radio" id="card" name="payment" value="card">
+              <label for="card" style="font-weight: 500; margin-left: 0.5rem;">Credit / Debit Card</label>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right Column: Fare Summary -->
+      <div>
+        <div class="booking-section fare-summary">
+          <h2>💰 Fare Summary</h2>
+          <div class="form-group">
+            <label class="form-label">Travel Class</label>
+            <select class="form-control" id="travel-class" onchange="calculateFare()">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+          
+          <div style="margin-top: 2rem;">
+            <div class="fare-row">
+              <span id="base-fare-label">Ticket Fare (1 Passenger)</span>
+              <span id="base-fare-value">₹0</span>
+            </div>
+            <div class="fare-row">
+              <span>Convenience Fee</span>
+              <span>₹40</span>
+            </div>
+            <div class="fare-total">
+              <span>Total Amount</span>
+              <span id="total-fare-value">₹0</span>
+            </div>
+          </div>
+
+          <button id="pay-btn" class="btn btn-secondary" style="width: 100%; margin-top: 2rem; font-size: 1.125rem;">Pay & Book</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/bookings.js"></script>
+  <script>
+    let currentTrain = null;
+    let travelDate = null;
+    let basePricePerPassenger = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Auth check
+      const user = Auth.getCurrentUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      Auth.updateUI();
+
+      // 2. Parse URL params
+      const params = new URLSearchParams(window.location.search);
+      const trainNo = params.get('trainNo');
+      travelDate = params.get('date');
+
+      if (!trainNo || !travelDate) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      currentTrain = window.TRAINS.find(t => t.trainNo === trainNo);
+      if (!currentTrain) {
+        alert("Train not found.");
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // 3. Render Train Summary
+      const destName = window.STATIONS.find(s => s.code === currentTrain.destination)?.name || currentTrain.destination;
+      const srcName = window.STATIONS.find(s => s.code === currentTrain.source)?.name || currentTrain.source;
+      
+      document.getElementById('train-summary').innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="font-size: 1.5rem; margin: 0;">${currentTrain.name} (${currentTrain.trainNo})</h3>
+          <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem;">${travelDate}</span>
+        </div>
+        <div style="display: flex; gap: 2rem; align-items: center;">
+          <div>
+            <div style="font-size: 1.25rem; font-weight: 700;">${currentTrain.departureTime}</div>
+            <div style="font-size: 0.875rem; opacity: 0.8;">${srcName}</div>
+          </div>
+          <div style="opacity: 0.5;">━━━━</div>
+          <div>
+            <div style="font-size: 1.25rem; font-weight: 700;">${currentTrain.arrivalTime}</div>
+            <div style="font-size: 0.875rem; opacity: 0.8;">${destName}</div>
+          </div>
+        </div>
+      `;
+
+      // 4. Populate Classes
+      const classSelect = document.getElementById('travel-class');
+      currentTrain.classes.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c;
+        option.textContent = `${c} - ₹${currentTrain.fares[c]}`;
+        classSelect.appendChild(option);
+      });
+
+      // Populate user's name in first row
+      document.querySelector('.passenger-name').value = user.name;
+
+      calculateFare();
+
+      // 5. Handle Booking Submission
+      document.getElementById('pay-btn').addEventListener('click', handlePayment);
+    });
+
+    function addPassenger() {
+      const container = document.getElementById('passengers-container');
+      const row = document.createElement('div');
+      row.className = 'passenger-row animate-fade-up';
+      row.innerHTML = `
+        <div class="form-group mb-0">
+          <input type="text" class="form-control passenger-name" required placeholder="Passenger Name">
+        </div>
+        <div class="form-group mb-0">
+          <input type="number" class="form-control passenger-age" required min="1" max="120" placeholder="Age">
+        </div>
+        <div class="form-group mb-0">
+          <select class="form-control passenger-gender" required>
+            <option value="" disabled selected>Select</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+            <option value="O">Other</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-outline" style="color:red; border-color:red; margin-bottom:0.2rem" onclick="this.parentElement.remove(); calculateFare()">X</button>
+      `;
+      container.appendChild(row);
+      calculateFare();
+    }
+
+    function calculateFare() {
+      if (!currentTrain) return;
+
+      const classSel = document.getElementById('travel-class').value;
+      basePricePerPassenger = currentTrain.fares[classSel];
+
+      const numPassengers = document.querySelectorAll('.passenger-row').length;
+      
+      const totalBaseFare = basePricePerPassenger * numPassengers;
+      const convenienceFee = 40;
+      const finalTotal = totalBaseFare + convenienceFee;
+
+      document.getElementById('base-fare-label').textContent = `Ticket Fare (${numPassengers} Passenger${numPassengers > 1 ? 's' : ''})`;
+      document.getElementById('base-fare-value').textContent = `₹${totalBaseFare}`;
+      document.getElementById('total-fare-value').textContent = `₹${finalTotal}`;
+
+      return finalTotal;
+    }
+
+    function handlePayment() {
+      const form = document.getElementById('booking-form');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      // Gather passenger data
+      const passengers = [];
+      const rows = document.querySelectorAll('.passenger-row');
+      rows.forEach(row => {
+        passengers.push({
+          name: row.querySelector('.passenger-name').value,
+          age: row.querySelector('.passenger-age').value,
+          gender: row.querySelector('.passenger-gender').value
+        });
+      });
+
+      const travelClass = document.getElementById('travel-class').value;
+      const totalAmount = calculateFare();
+      const user = Auth.getCurrentUser();
+
+      // Simulate API call/Payment gateway delay
+      const btn = document.getElementById('pay-btn');
+      btn.textContent = 'Processing...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        const booking = Bookings.createBooking(user.id, currentTrain.trainNo, travelDate, passengers, totalAmount, travelClass);
+        alert(`Payment Successful! Your PNR is ${booking.pnr}`);
+        window.location.href = 'dashboard.html';
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
